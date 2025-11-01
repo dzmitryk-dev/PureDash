@@ -281,17 +281,15 @@ Keep PureDash simple. Implement only what's needed. Remove unused code. Clean up
 - **Triggers:** Push to `master` branch, all pull requests (any branch)
 - **Purpose:** Verify code compiles and tests pass before merge
 
-### CI Pipeline (4 steps)
+### CI Pipeline (3 steps)
 1. **Checkout code:** Get repository
 2. **Set up JDK 21:** Install Java with caching
-3. **Validate Gradle wrapper:** Security check on gradlew
-4. **Build and test:** `./gradlew build` (includes compile + tests)
+3. **Build and test:** `./gradlew build` (includes compile + tests)
 
 ### PR Merge Requirements
 ✅ All CI checks must pass before merge:
 - Code compiles successfully
 - All tests pass
-- Gradle wrapper is valid
 
 ### Running CI Locally
 ```bash

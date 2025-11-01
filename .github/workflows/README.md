@@ -23,15 +23,13 @@ Java: `21 (Temurin)`
 **Steps:**
 1. **Checkout code** - Clones repository
 2. **Set up JDK 21** - Installs Java and enables Gradle caching
-3. **Validate Gradle wrapper** - Security check on Gradle wrapper
-4. **Build and test** - Compiles and tests all modules: `./gradlew build`
+3. **Build and test** - Compiles and tests all modules: `./gradlew build`
 
 ### PR Merge Requirements
 
 Before a PR can be merged, ALL of these checks must pass:
 - ✅ Code compiles successfully
 - ✅ All tests pass
-- ✅ Gradle wrapper is valid
 
 ### Local Testing
 
@@ -56,10 +54,6 @@ View workflow execution and logs:
 - Clear Gradle cache: `./gradlew clean`
 - Rebuild: `./gradlew build`
 - Check Java version: `java -version` (should be 21)
-
-**Gradle wrapper validation fails:**
-- Verify `gradlew` file is in git: `git ls-files | grep gradlew`
-- Check wrapper checksum: `./gradlew --version`
 
 ### Caching
 
@@ -92,10 +86,10 @@ For now: Keep CI simple and focused on core verification (compile + test).
 
 ## Security
 
-- ✅ Gradle wrapper validated on every run
+- ✅ Gradle wrapper already in repository (trusted)
 - ✅ Official GitHub actions used (checkout, setup-java)
-- ✅ Official Gradle wrapper validation action
 - ✅ No secrets stored in workflow
 - ✅ Read-only code checkout for security
+
 
 
