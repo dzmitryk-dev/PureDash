@@ -131,6 +131,11 @@ A lightweight, server-side rendered (SSR) web dashboard designed to run reliably
 - **Contract Tests (Integrations):** Validate parsing and mapping from recorded JSON fixtures; verify timeout behavior.
 - **Non-Functional Checks:** Smoke tests for rendering performance and memory footprint on startup.
 
+### Test Guidelines
+- **Use Java `HttpClient`** for HTTP requests in integration tests (modern, built-in, cleaner API)
+- Server startup is synchronous; `server.start()` ensures it's ready immediately
+- Never use arbitrary `Thread.sleep()` or polling delays in tests
+
 ---
 
 ## 16) Observability & Logging

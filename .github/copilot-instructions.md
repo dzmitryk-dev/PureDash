@@ -151,6 +151,10 @@ When we need a framework (for complex routing, serialization, etc.), we can add 
 - Run tests on each change: `./gradlew test`
 - Keep tests simple and focused
 
+### Test Guidelines
+- **Use Java `HttpClient`** for HTTP requests in integration tests (modern, built-in, cleaner API)
+- Server startup is synchronous, so `server.start()` ensures it's ready immediately
+
 ## Build & Run
 
 ### Build
