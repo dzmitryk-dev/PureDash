@@ -9,7 +9,6 @@ import org.mockito.kotlin.verify
 import java.io.ByteArrayOutputStream
 import java.net.URI
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class HandlersTest {
 
@@ -23,15 +22,15 @@ class HandlersTest {
             on { responseHeaders } doReturn headers
             on { requestURI } doReturn URI("http://localhost:8080/")
         }
-        val handler = htmlHandler()
+        val testHtmlContent = "<html>Test Content</html>"
+        val handler = htmlHandler(htmlContentProvider = { testHtmlContent })
 
         // Act
         handler.invoke(exchange)
 
         // Assert
-        verify(exchange).sendResponseHeaders(200, responseBody.size().toLong())
-        assertTrue(responseBody.toString().contains("Hello World"))
-        assertTrue(responseBody.toString().contains("<!DOCTYPE html>"))
+        verify(exchange).sendResponseHeaders(200, testHtmlContent.length.toLong())
+        assertEquals(testHtmlContent, responseBody.toString())
     }
 
     @Test

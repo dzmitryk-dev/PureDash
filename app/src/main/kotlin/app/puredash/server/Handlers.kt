@@ -1,25 +1,16 @@
 package app.puredash.server
 
 import com.sun.net.httpserver.HttpExchange
+import java.io.OutputStream
 
-internal fun htmlHandler(): HttpExchange.() -> Unit =
+internal fun htmlHandler(
+    htmlContentProvider: () -> String
+): HttpExchange.() -> Unit =
     fun HttpExchange.() {
         this.responseHeaders["Content-Type"] = "text/html; charset=UTF-8"
-        val response = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <title>PureDash</title>
-        </head>
-        <body>
-            <h1>Hello World</h1>
-        </body>
-        </html>
-    """.trimIndent()
+        val response = htmlContentProvider()
         this.sendResponseHeaders(200, response.length.toLong())
-        this.responseBody.write(response.toByteArray(Charsets.UTF_8))
-        this.responseBody.close()
+        this.responseBody.writeData(response)
     }
 
 internal val defaultOkHandler: HttpExchange.() -> Unit =
@@ -27,8 +18,7 @@ internal val defaultOkHandler: HttpExchange.() -> Unit =
         this.responseHeaders["Content-Type"] = "text/plain; charset=UTF-8"
         val response = "OK"
         this.sendResponseHeaders(200, response.length.toLong())
-        this.responseBody.write(response.toByteArray(Charsets.UTF_8))
-        this.responseBody.close()
+        this.responseBody.writeData(response)
     }
 
 internal val defaultNotFoundHandler: HttpExchange.() -> Unit =
@@ -36,6 +26,11 @@ internal val defaultNotFoundHandler: HttpExchange.() -> Unit =
         this.responseHeaders["Content-Type"] = "text/plain; charset=UTF-8"
         val response = "Not Found"
         this.sendResponseHeaders(404, response.length.toLong())
-        this.responseBody.write(response.toByteArray(Charsets.UTF_8))
-        this.responseBody.close()
+        this.responseBody.writeData(response)
     }
+
+fun OutputStream.writeData(data: String) {
+    this.use { out ->
+        out.write(data.toByteArray(Charsets.UTF_8))
+    }
+}
