@@ -273,3 +273,47 @@ JUnit: 5.10.0 (testing)
 
 Keep PureDash simple. Implement only what's needed. Remove unused code. Clean up immediately.
 
+
+## Continuous Integration
+
+### GitHub Actions Workflow
+- **File:** `.github/workflows/ci.yml`
+- **Triggers:** Push to `master` branch, all pull requests (any branch)
+- **Purpose:** Verify code compiles and tests pass before merge
+
+### CI Pipeline (4 steps)
+1. **Checkout code:** Get repository
+2. **Set up JDK 21:** Install Java with caching
+3. **Validate Gradle wrapper:** Security check on gradlew
+4. **Build and test:** `./gradlew build` (includes compile + tests)
+
+### PR Merge Requirements
+✅ All CI checks must pass before merge:
+- Code compiles successfully
+- All tests pass
+- Gradle wrapper is valid
+
+### Running CI Locally
+```bash
+./gradlew build          # Same as CI: compiles + tests
+```
+
+### Runtime Verification
+Server startup and runtime verification should be implemented as **integration tests**, not pipeline steps.
+
+Add tests in `app/src/test/kotlin/`:
+```kotlin
+@Test
+fun serverStartsAndResponds() {
+    // Test server startup and responses
+}
+```
+
+These tests run automatically as part of `./gradlew build`.
+
+### Adding New Tests
+When implementing features:
+1. Add unit/integration tests in `src/test/kotlin/`
+2. CI will auto-run tests as part of build
+3. PR will show test results
+4. Keep pipeline simple: compile + test
