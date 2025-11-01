@@ -132,9 +132,15 @@ A lightweight, server-side rendered (SSR) web dashboard designed to run reliably
 - **Non-Functional Checks:** Smoke tests for rendering performance and memory footprint on startup.
 
 ### Test Guidelines
-- **Use Java `HttpClient`** for HTTP requests in integration tests (modern, built-in, cleaner API)
+- **Use Mockito** (`org.mockito.kotlin:mockito-kotlin`) to mock external dependencies like HttpExchange
+- **Follow Arrange-Act-Assert (AAA) pattern:**
+  - Arrange: Set up test data and mocks
+  - Act: Execute the code being tested
+  - Assert: Verify the results using assertions and mock verifications
+- **One test, one behavior:** Each test should verify a single piece of functionality
+- **Use Java `HttpClient`** for HTTP integration tests (modern, built-in, cleaner API)
 - Server startup is synchronous; `server.start()` ensures it's ready immediately
-- Never use arbitrary `Thread.sleep()` or polling delays in tests
+- Verify tests pass with `./gradlew build` only (no manual server startup or curl testing)
 
 ---
 

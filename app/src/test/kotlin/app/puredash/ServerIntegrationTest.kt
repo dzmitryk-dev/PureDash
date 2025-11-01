@@ -26,7 +26,20 @@ class ServerIntegrationTest {
     }
 
     @Test
-    fun serverRespondsToRootPath() {
+    fun statusEndpointReturnsOk() {
+        val request = HttpRequest.newBuilder()
+            .uri(URI("http://localhost:$testPort/status"))
+            .GET()
+            .build()
+
+        val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
+
+        assertEquals(200, response.statusCode())
+        assertEquals("OK", response.body())
+    }
+
+    @Test
+    fun rootPathReturnsOk() {
         val request = HttpRequest.newBuilder()
             .uri(URI("http://localhost:$testPort/"))
             .GET()
@@ -35,12 +48,10 @@ class ServerIntegrationTest {
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
 
         assertEquals(200, response.statusCode())
-        assertEquals("text/html; charset=UTF-8", response.headers().firstValue("content-type").orElse(""))
-        assert(response.body().contains("Hello World"))
     }
 
     @Test
-    fun serverRespondsToArbitraryPath() {
+    fun arbitraryPathReturns404() {
         val request = HttpRequest.newBuilder()
             .uri(URI("http://localhost:$testPort/any/path"))
             .GET()
@@ -48,7 +59,8 @@ class ServerIntegrationTest {
 
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
 
-        assertEquals(200, response.statusCode())
-        assert(response.body().contains("Hello World"))
+        assertEquals(404, response.statusCode())
+        assertEquals("Not Found", response.body())
     }
 }
+

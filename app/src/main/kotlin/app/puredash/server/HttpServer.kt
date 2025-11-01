@@ -1,30 +1,36 @@
 package app.puredash.server
 
+import com.sun.net.httpserver.HttpExchange
+import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
 import java.net.InetSocketAddress
+import java.util.concurrent.Executor
 
-fun createServer(port: Int): HttpServer {
+internal class DefaultHttpHandler(
+    private val okHandler: HttpExchange.() -> Unit = defaultOkHandler,
+    private val notFoundHandler: HttpExchange.() -> Unit = defaultNotFoundHandler,
+    private val htmlHandler: HttpExchange.() -> Unit = htmlHandler(),
+) : HttpHandler {
+
+    override fun handle(exchange: HttpExchange) {
+        val path = exchange.requestURI.path
+        when (path) {
+            "/status" -> okHandler(exchange)
+            "/" -> htmlHandler(exchange)
+            else -> notFoundHandler(exchange)
+        }
+    }
+}
+
+internal fun createServer(
+    port: Int = 8080,
+    executor: Executor? = null,
+    rootHttpHandler: HttpHandler = DefaultHttpHandler(),
+): HttpServer {
     val server = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
     
-    server.createContext("/") { exchange ->
-        exchange.responseHeaders["Content-Type"] = "text/html; charset=UTF-8"
-        val response = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>PureDash</title>
-            </head>
-            <body>
-                <h1>Hello World</h1>
-            </body>
-            </html>
-        """.trimIndent()
-        exchange.sendResponseHeaders(200, response.length.toLong())
-        exchange.responseBody.write(response.toByteArray(Charsets.UTF_8))
-        exchange.responseBody.close()
-    }
+    server.createContext("/", rootHttpHandler)
     
-    server.executor = null
+    server.executor = executor
     return server
 }

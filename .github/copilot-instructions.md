@@ -146,14 +146,21 @@ When we need a framework (for complex routing, serialization, etc.), we can add 
 - ❌ Multiple similar libraries
 
 ### Testing Strategy
-- Unit tests for business logic
-- Integration tests for endpoints
-- Run tests on each change: `./gradlew test`
+- Unit tests for business logic (use Mockito for mocking)
+- Integration tests for endpoints (use Java HttpClient)
+- Run tests on each change: `./gradlew build`
 - Keep tests simple and focused
+- One test should check only one behavior
 
 ### Test Guidelines
-- **Use Java `HttpClient`** for HTTP requests in integration tests (modern, built-in, cleaner API)
+- **Use Mockito** (`org.mockito.kotlin:mockito-kotlin`) to mock HttpExchange and other dependencies
+- **Follow Arrange-Act-Assert (AAA) pattern:**
+  - Arrange: Set up test data and mocks
+  - Act: Execute the code being tested
+  - Assert: Verify the results
+- **Use Java `HttpClient`** for HTTP integration tests (modern, built-in, cleaner API)
 - Server startup is synchronous, so `server.start()` ensures it's ready immediately
+- **Verify with `./gradlew build` only** - no manual server startup or curl testing needed for unit tests
 
 ### Git Workflow
 - **NEVER commit changes automatically** – only commit when explicitly requested
