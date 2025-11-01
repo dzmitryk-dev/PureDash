@@ -35,8 +35,8 @@ class ServerIntegrationTest {
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
 
         assertEquals(200, response.statusCode())
-        assertEquals("OK", response.body())
-        assertEquals("text/plain", response.headers().firstValue("content-type").orElse(""))
+        assertEquals("text/html; charset=UTF-8", response.headers().firstValue("content-type").orElse(""))
+        assert(response.body().contains("Hello World"))
     }
 
     @Test
@@ -49,6 +49,6 @@ class ServerIntegrationTest {
         val response = httpClient.send(request, HttpResponse.BodyHandlers.ofString())
 
         assertEquals(200, response.statusCode())
-        assertEquals("OK", response.body())
+        assert(response.body().contains("Hello World"))
     }
 }

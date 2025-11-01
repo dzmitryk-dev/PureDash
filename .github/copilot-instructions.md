@@ -155,6 +155,12 @@ When we need a framework (for complex routing, serialization, etc.), we can add 
 - **Use Java `HttpClient`** for HTTP requests in integration tests (modern, built-in, cleaner API)
 - Server startup is synchronous, so `server.start()` ensures it's ready immediately
 
+### Git Workflow
+- **NEVER commit changes automatically** – only commit when explicitly requested
+- Always verify changes work (build + tests pass) before asking for commit
+- User controls all git commits – no automatic pushes or commits
+- When asked to commit, provide clear commit message following conventional commits
+
 ## Build & Run
 
 ### Build
