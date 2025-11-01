@@ -7,6 +7,9 @@ dependencies {
     // Logging
     implementation(libs.logback.classic)
     
+    // HTML building
+    implementation(libs.kotlinx.html)
+    
     // Testing
     testImplementation(libs.bundles.testing)
 }
