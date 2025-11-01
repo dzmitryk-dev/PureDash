@@ -4,8 +4,11 @@ plugins {
 }
 
 dependencies {
+    // Logging
+    implementation(libs.logback.classic)
+    
     // Testing
-    implementation(libs.bundles.testing)
+    testImplementation(libs.bundles.testing)
 }
 
 application {

@@ -1,187 +1,275 @@
 # PureDash - Copilot Instructions
 
-**Project Status:** Fresh start - iterative development phase
+**Project Status:** Iteration 2 - Web Server Implementation  
+**Guiding Principle:** Minimal implementation, minimal changes
+
+## Core Development Principle
+
+> **Implement the minimum required to achieve the goal. Add only what is needed. No more.**
+
+- Add dependencies ONLY when actually used
+- Implement only what's needed for current iteration
+- Avoid speculative/future-proofing code
+- Keep codebase simple, understandable, maintainable
+- Clean up unused code immediately
+- Prefer built-in Java over external frameworks when possible
 
 ## Project Overview
-PureDash is a **lightweight server-side rendered (SSR) dashboard** designed to run reliably on legacy browsers (Android 4.2+). It will fetch data from pluggable integrations (starting with Home Assistant), cache results, and render pure HTML with minimal JavaScript. The system prioritizes **simplicity, resilience, extensibility, and minimal dependencies**.
+PureDash is a **lightweight server-side rendered (SSR) dashboard** designed to run reliably on legacy browsers (Android 4.2+). It fetches data from integrations, caches results, and renders pure HTML with minimal JavaScript. The system prioritizes **simplicity, resilience, extensibility, and minimal dependencies**.
 
 **Technology Stack:**
 - **Language:** Kotlin with Java 21
-- **Server:** Ktor (lightweight web framework) - to be added
-- **Frontend:** Pure HTML/CSS + minimal inline JS (no SPA frameworks)
-- **Serialization:** kotlinx.serialization (JSON/YAML) - to be added
-- **Build System:** Gradle
+- **Server:** Java built-in HttpServer (zero external web framework)
+- **Build System:** Gradle with version catalog
+- **Minimal Dependencies:** Only what's actually used
 
-## Core Objectives
-1. **Compatibility:** Render correctly on Android 4.2 WebKit (limited CSS/JS support)
-2. **Simplicity:** Pure HTML SSR; only minimal inline JS when absolutely necessary
-3. **Extensibility:** Pluggable modules for integrations and widgets, discoverable at runtime
-4. **Reliability:** Server never blocks page rendering on remote API calls; always uses cached snapshots
-5. **Minimal Footprint:** Small memory usage, fast startup, minimal third-party libraries
-6. **Easy Deployment:** Single JVM process or small Docker image
-
-## Current Project Structure (Minimal)
+## Current Project Structure
 
 ```
 PureDash/
-├── app/                             # Main application module
+├── app/                                # Main application module
 │   ├── src/main/kotlin/app/puredash/
-│   │   └── Main.kt                 # Entry point (currently: println "Hello World")
-│   ├── src/test/kotlin/            # Test directory (empty)
-│   └── build.gradle.kts             # App module config
+│   │   └── Main.kt                    # HTTP server entry point
+│   ├── src/test/kotlin/               # Test directory (empty)
+│   └── build.gradle.kts               # App module config
 │
-├── build.gradle.kts                 # Root build config
-├── settings.gradle.kts              # Module configuration
-├── gradle.properties                # Build version & constants
-└── llm-agent-architecture-and-principles.md  # Full architectural spec
+├── build.gradle.kts                    # Root build config
+├── settings.gradle.kts                 # Module configuration
+├── gradle/libs.versions.toml          # Version catalog (MINIMAL - only used)
+├── gradle.properties                   # Build constants
+└── llm-agent-architecture-and-principles.md  # Architectural spec
 ```
 
-## Current State
-- ✅ Gradle structure set up (single app module)
-- ✅ Java 21 / Kotlin configuration ready
-- ✅ Minimal entry point: `Main.kt` with `println("Hello World")`
+## Current State (Iteration 2)
+
+### ✅ Completed
+- ✅ HTTP server on port 8080 (Java HttpServer)
+- ✅ Responds with "OK" to all requests
+- ✅ Logging configured (logback-classic)
 - ✅ Project builds successfully
-- ✅ App runs and prints "Hello World"
-- ⏳ No external dependencies yet (Ktor, serialization to be added iteratively)
-- ⏳ No server running yet (Ktor to be added)
-- ⏳ No caching, scheduling, or integrations yet
+- ✅ **Version catalog cleaned - only essential dependencies**
 
-## Development Approach: Iterative Refinement
+### Current Dependencies
+```toml
+# gradle/libs.versions.toml
+[versions]
+- kotlin = "2.2.20"
+- junit = "5.10.0"
+- logback = "1.5.6"
 
-We will build PureDash incrementally, test at each step, and align with the architecture spec as we progress.
+[libraries]
+- kotlin-test (Kotlin test library)
+- junit-jupiter (JUnit 5)
+- logback-classic (Logging)
 
-### Iteration 1 (Completed): Minimal Setup
-- ✅ Single module Gradle structure
-- ✅ Minimal main function
-- ✅ Build verified
-- ✅ Hello World runs
+[bundles]
+- testing (kotlin-test + junit-jupiter)
+```
 
-### Iteration 2 (Next): Add Web Server
-- Add Ktor Server dependencies
-- Create basic HTTP server on port 8080
-- GET `/` returns simple "PureDash" HTML
-- GET `/health` returns JSON: `{"status":"UP"}`
-- Verify both endpoints work
+**That's it. No Ktor, no serialization, no HTML builders. Minimal and clean.**
 
-### Iteration 3: Configuration Loading
-- Add YAML configuration support (kaml library)
-- Create `config/kiosk.example.yml`
-- Load config on startup (environment variable: `CONFIG_PATH`)
-- Read server port from config
+## Implementation Details
 
-### Iteration 4: In-Memory Cache & Scheduler
-- Implement `Cache<K, V>` class (thread-safe)
-- Implement `Scheduler` class for fixed-rate polling
-- Define `Integration` interface (contract for data sources)
-- Define `Snapshot` interface (immutable data)
+### Main.kt - HTTP Server (23 lines)
+```kotlin
+package app.puredash
 
-### Iteration 5: Rendering & Widgets
-- Implement `Renderer` class (SSR from widgets)
-- Implement `Widget` interface
-- Create Clock widget (server-side rendered)
-- Modify GET `/` to use renderer
+import com.sun.net.httpserver.HttpServer
+import org.slf4j.LoggerFactory
+import java.net.InetSocketAddress
 
-### Iteration 6: Home Assistant Integration (New Module)
-- Create `ha-integration` module
-- Implement `HaIntegration` implementing `Integration`
-- Create REST API client with timeouts
-- Poll weather entity on fixed interval
-- Create weather widget
+fun main() {
+    val logger = LoggerFactory.getLogger("app.puredash.Main")
+    
+    val port = 8080
+    val server = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
+    
+    server.createContext("/") { exchange ->
+        exchange.responseHeaders["Content-Type"] = "text/plain"
+        val response = "OK"
+        exchange.sendResponseHeaders(200, response.length.toLong())
+        exchange.responseBody.write(response.toByteArray())
+        exchange.responseBody.close()
+    }
+    
+    server.executor = null
+    server.start()
+    logger.info("PureDash server started on port $port")
+}
+```
 
-### Iteration 7+: Refinement
-- Additional integrations and widgets
-- Error handling and graceful degradation
-- Logging and observability
-- Docker packaging
-- Performance optimization
+### Why Java HttpServer?
+- ✅ Built into Java (no external dependency)
+- ✅ Simple to understand and maintain
+- ✅ Fast startup
+- ✅ Sufficient for SSR dashboard
+- ✅ Aligns with minimal implementation principle
 
-## Key Architectural Concepts (Reference)
+When we need a framework (for complex routing, serialization, etc.), we can add Ktor. For now: **YAGNI** (You Aren't Gonna Need It).
 
-### Integrations
-- Pluggable components that fetch data from external sources
-- Produce **immutable snapshots** on fixed intervals
-- Encapsulate own error handling; failures never crash app
-- (To be added in later iterations)
+## Core Objectives
+1. **Compatibility:** Render on Android 4.2 WebKit
+2. **Simplicity:** Pure HTML SSR; minimal JS
+3. **Extensibility:** Pluggable integrations/widgets
+4. **Reliability:** Never block on remote APIs
+5. **Minimal Footprint:** Small memory, fast startup
+6. **Easy Deployment:** Single JVM process
 
-### Snapshots
-- Immutable, typed data from integration at point-in-time
-- Include timestamp, stale flag, error message
-- Thread-safe; stored in cache by integration ID
-- (To be added in iteration 4)
+## Development Practices
 
-### Widgets
-- Self-contained visual components
-- Read snapshots via read-only context (never call integrations)
-- Generate HTML fragments server-side
-- Display graceful indicators when data is missing/stale
-- (To be added in iteration 5)
+### Minimal Implementation Principle
+- **Add dependencies incrementally:** Only when needed, not speculatively
+- **Simplest solution first:** Use Java stdlib before external libs
+- **Clean up immediately:** Remove unused code/dependencies
+- **Document trade-offs:** Explain why we're using a library
+- **Avoid premature optimization:** Solve problems when they exist
 
-### Cache
-- Thread-safe in-memory store for latest snapshots
-- Page rendering reads from cache only; never waits on APIs
-- Keeps stale data on integration failures
-- (To be added in iteration 4)
+### Code Guidelines
+- Use `val` not `var` (immutability)
+- Keep functions small (< 30 lines)
+- Explicit imports (no wildcard imports)
+- Minimal logging (info on startup, warn on issues, error on failures)
+- Comments only when non-obvious
+- No magic numbers (use named constants)
 
-### Scheduler
-- Fixed-rate polling per integration
-- Strict connect/read timeouts on all external calls
-- Bounded thread pools; no unbounded queues
-- (To be added in iteration 4)
+### Dependency Policy
+**Add a dependency ONLY when:**
+1. ✅ It's needed for current iteration
+2. ✅ We've evaluated simpler alternatives
+3. ✅ Benefits clearly outweigh complexity
+4. ✅ It's maintained and stable
 
-### Renderer
-- Composes final HTML page from widgets
-- Reads from cache only (no I/O blocking)
-- Target: < 30 ms page render time
-- (To be added in iteration 5)
-
-## Development Guidelines
-
-### Code Style
-- **Immutability First:** Models and configs as `data class`; avoid mutable state
-- **Fail Closed:** On errors, keep prior state; inform UI clearly
-- **Minimal Logging:** Short structured messages; no secrets or PII
-- **Old-Browser Discipline:** Test CSS/JS on Android 4.2; avoid modern features
-- **No Hidden Coupling:** Explicit inputs/outputs; clear dependencies
+**Never add for:**
+- ❌ Potential future features
+- ❌ "Nice to have" functionality
+- ❌ Framework fashion
+- ❌ Multiple similar libraries
 
 ### Testing Strategy
-- Unit tests for individual components
-- Integration tests for server endpoints
-- Contract tests for integrations (using JSON fixtures)
-- Performance smoke tests (render latency, memory)
+- Unit tests for business logic
+- Integration tests for endpoints
+- Run tests on each change: `./gradlew test`
+- Keep tests simple and focused
 
-### Building & Running
+## Build & Run
+
+### Build
 ```bash
-./gradlew build                     # Build all modules
-./gradlew :app:run                 # Run app (prints "Hello World")
-./gradlew test                     # Run all tests
-./gradlew :app:distZip             # Create distribution
+./gradlew build
 ```
 
-## Key Constraints (DO NOT violate)
-- **No WebSockets:** Use server-side polling only
-- **No persistent database:** In-memory cache only
-- **No SPA frameworks:** Server-side rendering only
-- **No modern JS:** ES5 compatible only (Android 4.2 WebKit)
-- **Cache-first rendering:** Page requests never block on external APIs
-- **No secrets in code:** Use environment variables only
-
-## Endpoints (To Be Implemented)
-
-| Endpoint | Method | Response | Purpose | Status |
-|----------|--------|----------|---------|--------|
-| `/` | GET | HTML | SSR dashboard page (renders from cache) | Iteration 2 |
-| `/health` | GET | JSON | Server status: `{"status":"UP"}` | Iteration 2 |
-
-## Next Immediate Step
-Run verified build and app:
+### Run Server
 ```bash
-./gradlew build       # Should succeed
-./gradlew :app:run   # Should print "Hello World"
+./gradlew :app:run
+```
+Server starts on http://localhost:8080 and logs: "PureDash server started on port 8080"
+
+### Test Endpoint
+```bash
+curl http://localhost:8080/
+# Output: OK
 ```
 
-Then proceed to **Iteration 2: Add Web Server** when ready.
+## Iteration Roadmap
 
-## References
-- **Full Architecture:** See `llm-agent-architecture-and-principles.md`
-- **Root Build Config:** `build.gradle.kts`
-- **App Module Config:** `app/build.gradle.kts`
+### ✅ Iteration 1: Minimal Setup
+- Basic Gradle structure
+- Hello World entry point
+
+### ✅ Iteration 2: HTTP Server (Current)
+- Java HttpServer on port 8080
+- Responds with "OK" to all requests
+- Minimal dependencies
+
+### → Iteration 3: Configuration Loading
+- Read config from YAML (config/kiosk.yml)
+- Load server port from config (default 8080)
+- Environment variable overrides
+- Graceful error handling
+
+### Iteration 4: Cache & Scheduler
+- In-memory cache for snapshots
+- Fixed-rate scheduler interface
+- Integration contract definition
+
+### Iteration 5: Rendering
+- Renderer class (SSR from templates)
+- Widget interface
+- Basic widgets (clock, static content)
+
+### Iteration 6: Home Assistant Integration
+- Create ha-integration module
+- REST API client
+- Weather entity polling
+- Weather widget
+
+### Iteration 7+: Polish & Production
+- Additional integrations
+- Error handling refinement
+- Performance optimization
+- Docker support
+
+## Key Constraints
+- **No external web frameworks** (using Java HttpServer)
+- **No persistent DB** (in-memory only)
+- **No SPA frameworks** (SSR only)
+- **Cache-first rendering** (never block on APIs)
+- **Minimal dependencies** (only what's used)
+- **No secrets in code** (env vars only)
+
+## Current Endpoints
+
+| Path | Status |
+|------|--------|
+| `/` (all paths) | Returns "OK" ✅ |
+
+## When to Add Dependencies
+
+### Example: "Should we add Ktor?"
+- Current: Java HttpServer works fine
+- Need: Complex routing? Template rendering? JSON serialization?
+- Decision: Add Ktor when we need at least 2-3 of these features
+- Action: Update libs.versions.toml, update build.gradle.kts, minimal code changes
+
+### Example: "Should we add kotlinx.html for templates?"
+- Current: Can use string builders
+- Need: HTML generation? Complex nested structures?
+- Decision: Add when we have 10+ lines of template logic
+- Action: Add to catalog, use in Iteration 5+
+
+## Quick Reference
+
+### Minimal Dependencies Currently
+```
+Kotlin: 2.2.20 (language)
+Java 21 (built-in HttpServer)
+Logback: 1.5.6 (logging)
+JUnit: 5.10.0 (testing)
+```
+
+### Zero External Dependencies For
+- Web server (Java built-in)
+- HTTP handling (Java built-in)
+- Core logic (plain Kotlin)
+- Configuration parsing (will add kaml only when needed)
+
+## Files Reference
+- `gradle/libs.versions.toml` → Dependency versions (MINIMAL)
+- `build.gradle.kts` (root) → Root Gradle config
+- `app/build.gradle.kts` → App module config
+- `app/src/main/kotlin/app/puredash/Main.kt` → Entry point
+
+## Next Steps
+
+1. ✅ Verify current build/run works
+2. → Plan Iteration 3 (Configuration)
+3. → Add YAML support (kaml library) when needed
+4. → Implement config loading from file + env vars
+
+## Philosophy
+
+> "Perfection is achieved, not when there is nothing more to add, but when there is nothing left to take away."  
+> — Often attributed to Saint-Exupéry
+
+Keep PureDash simple. Implement only what's needed. Remove unused code. Clean up immediately.
+
