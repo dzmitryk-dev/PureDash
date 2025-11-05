@@ -1,9 +1,12 @@
 package app.puredash.html
 
+import puredash.plugin.Widget
 import kotlinx.html.*
 import kotlinx.html.stream.createHTML
 
-fun getHtmlContent(): String = createHTML().html {
+fun getHtmlContent(
+    widgets: List<Widget>,
+): String = createHTML().html {
     lang = "en"
     head {
         meta(charset = "UTF-8")
@@ -20,9 +23,16 @@ fun getHtmlContent(): String = createHTML().html {
                     h1 {
                         color: #333;
                     }
-                    p {
-                        font-size: 1.2em;
-                        color: #666;
+                    .widget {
+                        background-color: white;
+                        padding: 20px;
+                        margin: 20px 0;
+                        border-radius: 5px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                    .widget-content {
+                        font-size: 1.1em;
+                        color: #333;
                     }
                 """.trimIndent())
             }
@@ -30,6 +40,13 @@ fun getHtmlContent(): String = createHTML().html {
     }
     body {
         h1 { +"Welcome to PureDash" }
-        p { +"Your lightweight dashboard server is running successfully!" }
+        
+        for (widget in widgets) {
+            div(classes = "widget") {
+                div(classes = "widget-content") {
+                    unsafe { raw(widget.render()) }
+                }
+            }
+        }
     }
 }

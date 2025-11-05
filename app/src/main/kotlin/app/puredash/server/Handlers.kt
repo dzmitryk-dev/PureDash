@@ -29,6 +29,10 @@ internal val defaultNotFoundHandler: HttpExchange.() -> Unit =
         this.responseBody.writeData(response)
     }
 
+internal fun responseNotFound(exchange: HttpExchange) {
+    defaultNotFoundHandler(exchange)
+}
+
 fun OutputStream.writeData(data: String) {
     this.use { out ->
         out.write(data.toByteArray(Charsets.UTF_8))

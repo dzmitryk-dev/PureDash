@@ -7,6 +7,9 @@ dependencies {
     // Plugin API
     implementation(project(":plugin-api"))
     
+    // Plugins
+    implementation(project(":plugins:clock"))
+    
     // Logging
     implementation(libs.logback.classic)
     

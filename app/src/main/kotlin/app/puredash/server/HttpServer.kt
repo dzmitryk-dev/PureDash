@@ -1,6 +1,5 @@
 package app.puredash.server
 
-import app.puredash.html.getHtmlContent
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.sun.net.httpserver.HttpServer
@@ -10,9 +9,7 @@ import java.util.concurrent.Executor
 internal class DefaultHttpHandler(
     private val okHandler: HttpExchange.() -> Unit = defaultOkHandler,
     private val notFoundHandler: HttpExchange.() -> Unit = defaultNotFoundHandler,
-    private val htmlHandler: HttpExchange.() -> Unit = htmlHandler(
-        htmlContentProvider = ::getHtmlContent
-    ),
+    private val htmlHandler: HttpExchange.() -> Unit,
 ) : HttpHandler {
 
     override fun handle(exchange: HttpExchange) {
@@ -28,7 +25,9 @@ internal class DefaultHttpHandler(
 internal fun createServer(
     port: Int = 8080,
     executor: Executor? = null,
-    rootHttpHandler: HttpHandler = DefaultHttpHandler(),
+    rootHttpHandler: HttpHandler = DefaultHttpHandler(
+        htmlHandler = { responseNotFound(this) }
+    ),
 ): HttpServer {
     val server = HttpServer.create(InetSocketAddress("0.0.0.0", port), 0)
 

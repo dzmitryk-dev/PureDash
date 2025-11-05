@@ -1,6 +1,8 @@
 package app.puredash
 
 import app.puredash.server.createServer
+import app.puredash.server.DefaultHttpHandler
+import app.puredash.server.htmlHandler
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,7 +14,12 @@ import kotlin.test.assertEquals
 
 class ServerIntegrationTest {
     private val testPort = 18080
-    private val server = createServer(testPort)
+    private val server = createServer(
+        port = testPort,
+        rootHttpHandler = DefaultHttpHandler(
+            htmlHandler = htmlHandler { "<html><body>Test</body></html>" }
+        )
+    )
     private val httpClient = HttpClient.newBuilder().build()
 
     @BeforeEach
