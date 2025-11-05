@@ -1,15 +1,16 @@
 package puredash.plugin.clock
 
 import org.junit.jupiter.api.Test
-import kotlin.test.assertTrue
+import java.time.LocalDateTime
+import kotlin.test.assertEquals
 
 class ClockWidgetTest {
     @Test
-    fun renderReturnsTimeInHHmmssFormat() {
-        val widget = ClockWidget()
+    fun renderReturnsFormattedTimeFromProvider() {
+        val mockDateTime = LocalDateTime.of(2025, 11, 5, 17, 58, 36)
+        val widget = ClockWidget { mockDateTime }
         val result = widget.render()
         
-        val pattern = Regex("""\d{2}:\d{2}:\d{2}""")
-        assertTrue(pattern.containsMatchIn(result), "Expected time format HH:mm:ss, got: $result")
+        assertEquals("17:58:36", result)
     }
 }
