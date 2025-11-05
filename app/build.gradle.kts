@@ -4,6 +4,9 @@ plugins {
 }
 
 dependencies {
+    // Plugin API
+    implementation(project(":plugin-api"))
+    
     // Logging
     implementation(libs.logback.classic)
     
